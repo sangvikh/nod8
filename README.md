@@ -20,20 +20,13 @@ The three-bit destination/source register fields address eight architectural end
 001  B
 010  C
 011  D
-100  MAR
-101  MEM
+100  E
+101  F
 110  FLAGS
 111  PC
 ```
 
 `A`–`D` are general-purpose registers. One may be used as a software-defined stack pointer, frame pointer, or other convention. There is no hardware stack increment/decrement logic.
-
-`MAR` drives the memory address bus. `MEM` is the memory-data endpoint selected by the register decoder; it is not a stored register:
-
-```text
-MOV MEM, A    ; write A to memory[MAR]
-MOV A, MEM    ; read memory[MAR] into A
-```
 
 ## Instruction format
 
@@ -52,12 +45,15 @@ When `imm = 1`, the second byte is an 8-bit immediate:
 When `imm = 0`, the second byte is the register-form operand:
 
 ```text
-[ NW | spare | spare | spare | src2 src1 src0 ]
+[ NW | LD | ST | spare | src2 src1 src0 ]
 ```
 
 `NW` suppresses destination writeback. It supports register-form `CMP`, `TST`, harmless `MOV.NW` operations, and future extension markers.
 
 `cond.z` predicates the instruction. A failed condition does not require a special shortened cycle: the instruction keeps its normal timing, but all architectural writes are suppressed.
+
+`LD` routes memory[src] to B bus at t2
+`ST` writes to memory[src] at t4
 
 ## ALU operations
 
