@@ -125,9 +125,9 @@ A normal instruction follows one regular four-step schedule:
 Condition failure and `NW` qualify the write enables rather than changing the timing schedule.
 
 ### Master timing table
-t0: PC_OE, PCH_WE, PC_INC
-t1: PC_OE, PCL_WE, PC_INC
-t2: DST_OE2/MEM_OE/PCL_OE, SRC_OE/MEM_OE, ALU_LATCH
+t0: PC_OE, IRH_WE, PC_INC
+t1: PC_OE, IRL_WE, PC_INC
+t2: DST_OE2/MEM_OE/IRL_OE, SRC_OE/MEM_OE, ALU_LATCH
 t3: ALU_OE, DST_WE/MEM_WE
 
 ## Flags
