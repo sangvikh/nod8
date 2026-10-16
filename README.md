@@ -45,7 +45,7 @@ When `imm = 1`, the second byte is an 8-bit immediate:
 When `imm = 0`, the second byte is the register-form operand:
 
 ```text
-[ NW | LD | ST | spare | src2 src1 src0 ]
+[ NW | LD | ST | spare1 | spare0 | src2 src1 src0 ]
 ```
 
 `NW` suppresses destination writeback. It supports register-form `CMP`, `TST`, harmless `MOV.NW` operations, and future extension markers.
