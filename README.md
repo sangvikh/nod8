@@ -111,7 +111,7 @@ OE_BUS2
 OE_ADDR
 ```
 
-PC drives `ADDR` during instruction fetch and can drive `BUS_2` when used as an ALU destination. MAR drives `ADDR` during memory access. The instruction latch is the intentional fixed-routing exception: it is connected directly to the decoder/fetch path.
+PC drives `ADDR` during instruction fetch and can drive `BUS_2` when used as an ALU destination. SRC drives `ADDR` during memory access. The instruction latch is the intentional fixed-routing exception: it is connected directly to the decoder/fetch path.
 
 A normal instruction follows one regular four-step schedule:
 
@@ -123,6 +123,12 @@ A normal instruction follows one regular four-step schedule:
 ```
 
 Condition failure and `NW` qualify the write enables rather than changing the timing schedule.
+
+### Master timing table
+t0: PC_OE, PCH_WE, PC_INC
+t1: PC_OE, PCL_WE, PC_INC
+t2: DST_OE2/MEM_OE/PCL_OE, SRC_OE/MEM_OE, ALU_LATCH
+t3: ALU_OE, DST_WE/MEM_WE
 
 ## Flags
 
