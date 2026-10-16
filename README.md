@@ -26,7 +26,7 @@ The three-bit destination/source register fields address eight architectural end
 111  PC
 ```
 
-`A`–`D` are general-purpose registers. One may be used as a software-defined stack pointer, frame pointer, or other convention. There is no hardware stack increment/decrement logic.
+`A`–`F` are general-purpose registers. One may be used as a software-defined stack pointer, frame pointer, or other convention. There is no hardware stack increment/decrement logic.
 
 ## Instruction format
 
