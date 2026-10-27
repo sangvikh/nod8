@@ -13,7 +13,7 @@ The design favors general primitives and software conventions over special-purpo
 
 ## Architectural registers
 
-The three-bit destination/source register fields address eight architectural endpoints:
+The three-bit register fields address eight architectural registers:
 
 ```text
 000  A
@@ -26,34 +26,30 @@ The three-bit destination/source register fields address eight architectural end
 111  PC
 ```
 
-`A`–`F` are general-purpose registers. One may be used as a software-defined stack pointer, frame pointer, or other convention. There is no hardware stack increment/decrement logic.
+`A`–`F` are general-purpose registers. Any register may be used as a pointer, stack pointer, frame pointer, or other software convention. There is no hardware stack increment/decrement logic and no dedicated `MAR` or `MEM` register endpoint.
 
 ## Instruction format
 
-Primary byte:
+Immediate form:
 
 ```text
-[ imm | cond.z | alu2 alu1 alu0 | dst2 dst1 dst0 ]
+[ 0 | cond | alu2 alu1 alu0 | src2 src1 src0 ] [ imm8 ]
 ```
 
-When `imm = 1`, the second byte is an 8-bit immediate:
+The `src` field always selects the pointer/source register. For an immediate ALU operation, the second byte supplies the full 8-bit immediate.
+
+Register and load/store form:
 
 ```text
-[ imm8 ]
-```
-
-When `imm = 0`, the second byte is the register-form operand:
-
-```text
-[ NW | LD | ST | spare1 | spare0 | src2 src1 src0 ]
+[ 0 | cond | alu2 alu1 alu0 | src2 src1 src0 ]
+[ NW | LD | ST | spare | dst2 dst1 dst0 ]
 ```
 
 `NW` suppresses destination writeback. It supports register-form `CMP`, `TST`, harmless `MOV.NW` operations, and future extension markers.
 
-`cond.z` predicates the instruction. A failed condition does not require a special shortened cycle: the instruction keeps its normal timing, but all architectural writes are suppressed.
+`cond` supplies the instruction predicate. A failed condition does not require a special shortened cycle: the instruction keeps its normal timing, but all architectural writes are suppressed.
 
-`LD` routes memory[src] to B bus at t2
-`ST` writes to memory[src] at t4
+`LD` routes `memory[src]` to the ALU B operand during `T2`. `ST` writes the ALU result to `memory[src]` during writeback. Asserting both provides an in-place read-modify-write operation.
 
 ## ALU operations
 
@@ -111,7 +107,7 @@ OE_BUS2
 OE_ADDR
 ```
 
-PC drives `ADDR` during instruction fetch and can drive `BUS_2` when used as an ALU destination. SRC drives `ADDR` during memory access. The instruction latch is the intentional fixed-routing exception: it is connected directly to the decoder/fetch path.
+PC drives `ADDR` during instruction fetch and can drive `BUS_2` when used as an ALU destination. During memory operations, `SRC` drives `ADDR`; the same register also drives the source/B path. The instruction latches are the intentional fixed-routing exception: they are connected directly to the decoder/fetch path.
 
 A normal instruction follows one regular four-step schedule:
 
@@ -125,10 +121,50 @@ A normal instruction follows one regular four-step schedule:
 Condition failure and `NW` qualify the write enables rather than changing the timing schedule.
 
 ### Master timing table
-t0: PC_OE_MEM, IRH_WE, PC_INC
-t1: PC_OE_MEM, IRL_WE, PC_INC
-t2: DST_OE2/MEM_OE/IRL_OE, SRC_OE/MEM_OE, ALU_LATCH
-t3: ALU_OE, DST_WE/MEM_WE
+
+```text
+T0:
+    PC_OE_ADDR
+    IRH_WE
+    PC_INC
+
+T1:
+    PC_OE_ADDR
+    IRL_WE
+    PC_INC
+
+T2:
+    DST_OE_BUS2
+    ALU_LATCH
+
+    register-source operation:
+        SRC_OE_BUS
+
+    LD:
+        SRC_OE_ADDR
+        MEM_OE
+        MEM_DATA_OE_BUS
+
+    ST:
+        SRC_OE_ADDR
+        ; destination/data operand remains on BUS_2
+
+    IMM:
+        IRL_OE_BUS
+        ; SRC_OE_BUS disabled
+        ; LD/ST are not selected
+
+T3:
+    ALU_OE
+
+    normal register write:
+        DST_WE
+
+    store:
+        MEM_WE
+```
+
+The exact active-low signal names are an implementation detail; the architectural phases are fetch-high-byte, fetch-low-byte, read/execute, and writeback.
 
 ## Flags
 
