@@ -143,7 +143,6 @@ T2:
     LD:
         SRC_OE_ADDR
         MEM_OE
-        MEM_DATA_OE_BUS
 
     ST:
         SRC_OE_ADDR
