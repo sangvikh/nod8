@@ -125,11 +125,13 @@ Condition failure and `NW` qualify the write enables rather than changing the ti
 ```text
 T0:
     PC_OE_ADDR
+    MEM_OE
     IRH_WE
     PC_INC
 
 T1:
     PC_OE_ADDR
+    MEM_OE
     IRL_WE
     PC_INC
 
